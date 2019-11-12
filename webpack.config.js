@@ -3,12 +3,13 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 // ... contents of webpack.config.js
 module.exports = {
+    mode: "development",
     entry: './src/index.js',
     output: {
         path: path.resolve(__dirname, 'docs'),
         filename: 'js/main.js',
     },
-
+    devtool: 'inline-source-map',
     module: {
         rules: [
             {
