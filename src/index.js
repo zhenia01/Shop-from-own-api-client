@@ -29,25 +29,19 @@ $(function () {
   });
 
   $(".navbar-menu-button").on("click", () => {
-    $(".navbar-nav").toggleClass("menu-open");
-    $(".navbar-nav .nav-item").toggleClass("menu-open");
+    let $navbarNav = $(".navbar-nav");
+    $navbarNav.toggleClass("opened");
+    $(".navbar-nav .nav-item").toggleClass("opened");
   });
 
   $(".nav-link").first().on("click", () => {
-    let categoriesNavbar = $("aside");
-    categoriesNavbar.toggleClass("opened");
-    // let isVisible = categoriesNavbar.hasClass("opened");
-    // let isVisible = (categoriesNavbar.css("visibility") === "visible");
-    // categoriesNavbar.css({ "visibility": (!isVisible ? "visible" : "hidden") });
-    // $("body").css({
-    //   "grid-template-areas": (!isVisible ?
-    //     `"h h h h h h h h h h h h h h h h h h"
-    //   "с с с m m m m m m m m m m m m m m m"
-    //   "f f f f f f f f f f f f f f f f f f"` :
-    //     `"h h h h h h h h h h h h h h h h h h"
-    // "m m m m m m m m m m m m m m m m m m"
-    // "f f f f f f f f f f f f f f f f f f"`)
-    // });
+    let $categoriesNavbar = $("aside");
+    $categoriesNavbar.toggleClass("opened");
+    let $navbarNav = $(".navbar-nav");
+    if ($navbarNav.hasClass("opened")) {
+      $navbarNav.toggleClass("opened");
+      $(".navbar-nav .nav-item").toggleClass("opened");
+    }
   });
 
 

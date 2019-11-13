@@ -118,6 +118,7 @@ main {
 
 aside {
   grid-area: c;
+  visibility: hidden;
   z-index: 100;
 }
 
@@ -129,7 +130,7 @@ aside {
 }
 
 aside.opened {
-  visibility: hidden;
+  visibility: visible;
 }
 
 .categories-nav {
@@ -402,12 +403,12 @@ body>footer {
   //   line-height: 2.5rem;
   // }
 
-  .navbar-nav.menu-open {
+  .navbar-nav.opened {
     display: flex;
     flex-direction: column;
   }
 
-  .nav-item.menu-open {
+  .nav-item.opened {
     visibility: visible;
     width: 100%;
     background-image: linear-gradient(260deg, #2376ae 0%, #c16ecf 100%);
