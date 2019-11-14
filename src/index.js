@@ -22,14 +22,14 @@ function makeCard(obj) {
   let price;
   if (obj["special_price"] !== null) { // has discount
     price =
-      `<p class="item-price">${obj['special_price']}грн</p>
+      `<p class="item-price">${obj['special_price']} грн</p>
      <p class="item-old-price">${obj['price']} грн</p>`
   } else {
     price = `<p class="item-price">${obj['price']} грн</p>`
   }
 
   return `<div class="card">
-    <img src="${obj['image_url']}" class="card-img" alt="...">
+    <img src="${obj['image_url']}" class="card-img" alt="${obj['name']}">
     <div class="card-body">
       <h4 class="card-title"><a class="card-title-link" href="#">${obj['name']}</a></h4>
       <div class="card-price">
@@ -49,10 +49,10 @@ $(function () {
   // create categories navbar
   getFromApi("https://nit.tron.net.ua/api/category/list", (json) => {
     let categoriesNav = $(".categories-nav").first();
-    categoriesNav.append(`<li class="category-item"><a class="category-link">All categories</a></li>`)
+    categoriesNav.append(`<li class="category-item id-all"><a class="category-link">All categories</a></li>`)
     for (const category of json) {
       categories.push(category["id"]);
-      categoriesNav.append(`<li class="category-item"><a class="category-link">${category["name"]}</a></li>`)
+      categoriesNav.append(`<li class="category-item id-${category['id']}"><a class="category-link">${category["name"]}</a></li>`)
     }
   });
 
@@ -94,6 +94,21 @@ $(function () {
       $(".navbar-nav .nav-item").toggleClass("opened");
     }
   });
+
+  // show certain category and hide other
+  $("aside").on("click", ".category-link", (event) => {
+    let $allCategories = $(".goods-category");
+    let categoryId = $(event.currentTarget).parent().attr("class").substring(14);
+    if (categoryId !== "id-all") {
+      $allCategories.show();
+      let $otherCategories = $allCategories.not(`.${categoryId}`);
+      $otherCategories.hide();
+    } else {
+      $allCategories.show();
+    }
+  });
+
+  
 
 });
 

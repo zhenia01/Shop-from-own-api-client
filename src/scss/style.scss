@@ -145,12 +145,12 @@ aside.opened {
 
 .category-item {
   list-style-type: none;
-
+  display: inline-block;
 }
 
 .category-link {
   display: inline-block;
-  // width: 100%;
+  width: 100%;
   height: 48px;
   line-height: 3rem;
   text-align: center;
