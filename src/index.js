@@ -17,7 +17,7 @@ function getFromApi(url, onSuccess) {
   });
 }
 
-// convert from object{name, image_url, price, special_price} to html element
+// convert object to html element for card in catalog
 function makeCardAtShop(obj) {
   let price;
   if (obj["special_price"] !== null) { // has discount
@@ -41,20 +41,54 @@ function makeCardAtShop(obj) {
   `
 }
 
-function updateCart(goodsInCart) {
-  let $cart = $(".cart-modal");
-  for (const [id, count] of goodsInCart.entries()) {
-    getFromApi(`https://nit.tron.net.ua/api/product/${id}`, (json) => {
-      let $container = $(".cart-modal > main");
-      $container.append(makeCardAtShop(json));
-    });
+// convert object to html element for card in cart
+function makeCardAtCart(obj, count) {
+  let price;
+  if (obj["special_price"] !== null) { // has discount
+    price =
+      `<p class="item-price">${obj['special_price']} грн</p>
+     <p class="item-old-price">${obj['price']} грн</p>`
+  } else {
+    price = `<p class="item-price">${obj['price']} грн</p>`
   }
+
+  return `<div class="card id-${obj['id']}">
+    <img src="${obj['image_url']}" class="card-img" alt="${obj['name']}">
+    <div class="card-body">
+      <h4 class="card-title"><a class="card-title-link" href="#">${obj['name']}</a></h4>
+      <div class="card-price">
+      ${price}
+      </div>
+      <img src="./img/trash.png" alt="trash" class="cart-item-delete">
+      <div class='cart-item-count-setter'>
+        <img src="./img/minus.png" alt="-" class="cart-item-dec-count">
+        <div class="cart-item-count">${count}</div>
+        <img src="./img/plus.png" alt="+" class="cart-item-inc-count">
+      </div>
+    </div>
+  </div>
+  `
 }
 
+function updateCart(goodsInCart) {
+  let $container = $(".cart > main");
+  $container.empty();
+  if (goodsInCart.size > 0) {
+    for (const [id, count] of goodsInCart.entries()) {
+      getFromApi(`https://nit.tron.net.ua/api/product/${id}`, (json) => {
+        $container.append(makeCardAtCart(json, count));
+      });
+    }
+  } else {
+    $.modal.close();
+    $(".empty-cart-modal").modal();
+  }
+}
 
 $(function () {
 
   let categories = [];
+  let goodsInCart = new Map();
 
   // create categories navbar
   getFromApi("https://nit.tron.net.ua/api/category/list", (json) => {
@@ -105,7 +139,7 @@ $(function () {
     }
   });
 
-  // show certain category and hide other
+  // show chosen category and hide other
   $("aside").on("click", ".category-link", (event) => {
     let $allCategories = $(".goods-category");
     let categoryId = $(event.currentTarget).parent().attr("class").substring(14);
@@ -118,25 +152,51 @@ $(function () {
     }
   });
 
-  let goodsInCart = new Map();
-
   // open cart modal window
   $(".cart-img").on("click", () => {
-    if (goodsInCart.length === 0) {
+    if (goodsInCart.size === 0) {
       $(".empty-cart-modal").modal();
     } else {
+      let $cart = $(".cart-modal");
       updateCart(goodsInCart);
-      $(".cart-modal").modal();
+      $cart.modal();
     }
   });
 
-  // updating cart
+  // increase quantity of item in cart from catalog
   $(".global-main").on("click", ".card-buy", (event) => {
     let id = $(event.currentTarget).parent().parent().attr("class").substring(8);
     if (goodsInCart.has(id)) {
-      goodsInCart.set(id, goodsInCart.get(id)+1);
+      goodsInCart.set(id, goodsInCart.get(id) + 1);
     } else {
       goodsInCart.set(id, 1);
+    }
+  });
+
+  // increase quantity of item in cart from cart
+  $(".cart").on("click", ".cart-item-inc-count", (event) => {
+    let $goods = $(event.currentTarget).parent().parent().parent();
+    let id = $goods.attr("class").substring(8);
+
+    let count = goodsInCart.get(id) + 1;
+
+    goodsInCart.set(id, count);
+    $(event.currentTarget).siblings(".cart-item-count").text(count);
+  });
+
+  // decrease quantity of item in cart from cart
+  $(".cart").on("click", ".cart-item-dec-count", (event) => {
+    let $goods = $(event.currentTarget).parent().parent().parent();
+    let id = $goods.attr("class").substring(8);
+
+    let count = goodsInCart.get(id) - 1;
+
+    if (count > 0) {
+      goodsInCart.set(id, count);
+      $(event.currentTarget).siblings(".cart-item-count").text(count);
+    } else {
+      goodsInCart.delete(id);
+      updateCart(goodsInCart);
     }
   });
 
