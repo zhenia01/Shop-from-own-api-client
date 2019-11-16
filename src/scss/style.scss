@@ -279,31 +279,28 @@ aside.opened {
   font-size: 1.5rem;
 }
 
-.cart-modal > main {
-  display: grid;
-}
-
 .modal {
   max-width: unset !important; // custom style
   top: 3rem;
 }
 
-.cart-modal > main {
+.cart > main {
+  display: grid;
   gap: 1.5em;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: min-content;
   min-height: 9rem;
 }
 
-.cart-modal .card {
+.cart .card {
   min-width: unset;
 }
 
-.cart-modal .card:hover {
+.cart .card:hover {
   box-shadow: none;
 }
 
-.cart-modal .card-img {
+.cart .card-img {
   min-width: unset;
 }
 
@@ -409,7 +406,7 @@ aside.opened {
     grid-template-columns: 1fr 1fr;
   }
 
-  .cart-modal > main {
+  .cart > main {
     grid-template-columns: 1fr 1fr;
   }
 
@@ -429,7 +426,7 @@ aside.opened {
     grid-template-columns: 1fr;
   }
 
-  .cart-modal > main {
+  .cart > main {
     grid-template-columns: 1fr;
   }
 

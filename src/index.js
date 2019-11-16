@@ -85,6 +85,27 @@ function updateCart(goodsInCart) {
   }
 }
 
+function updateTotalPrice(goodsInCart) {
+  
+  $(".total-price").text("0");
+
+  for (const [id, count] of goodsInCart.entries()) {
+    getFromApi(`https://nit.tron.net.ua/api/product/${id}`, (json) => {
+      let $totalPrice = $(".total-price");
+      let sum = parseFloat($totalPrice.text());
+
+      if (json["special_price"] !== null) { // has discount
+        sum += parseFloat(json["special_price"]) * count;
+      } else {
+        sum += parseFloat(json["price"]) * count;
+      }
+
+      $totalPrice.text(`${sum} грн`);
+    });
+  }
+
+}
+
 $(function () {
 
   let categories = [];
@@ -159,12 +180,13 @@ $(function () {
       $(".empty-cart-modal").modal();
     } else {
       let $cart = $(".cart-modal");
+      updateTotalPrice(goodsInCart);
       updateCart(goodsInCart);
       $cart.modal();
     }
   });
 
-  // increase quantity of item in cart from catalog
+  // buy item from catalog / increase quantity of item in cart from catalog
   $(".global-main").on("click", ".card-buy", (event) => {
     const id = $(event.currentTarget).parent().parent().attr("class").substring(8);
     if (goodsInCart.has(id)) {
@@ -183,6 +205,7 @@ $(function () {
 
     goodsInCart.set(id, count);
     $(event.currentTarget).siblings(".cart-item-count").text(count);
+    updateTotalPrice(goodsInCart);
   });
 
   // decrease quantity of item in cart from cart
@@ -195,8 +218,10 @@ $(function () {
     if (count > 0) {
       goodsInCart.set(id, count);
       $(event.currentTarget).siblings(".cart-item-count").text(count);
+      updateTotalPrice(goodsInCart);
     } else {
       goodsInCart.delete(id);
+      updateTotalPrice(goodsInCart);
       updateCart(goodsInCart);
     }
   });
@@ -207,8 +232,11 @@ $(function () {
     const id = $goods.attr("class").substring(8);
 
     goodsInCart.delete(id);
+    updateTotalPrice(goodsInCart);
     updateCart(goodsInCart);
   });
+
+  
 
 });
 
