@@ -89,6 +89,7 @@ $(function () {
 
   let categories = [];
   let goodsInCart = new Map();
+  let $cart = $(".cart");
 
   // create categories navbar
   getFromApi("https://nit.tron.net.ua/api/category/list", (json) => {
@@ -142,7 +143,7 @@ $(function () {
   // show chosen category and hide other
   $("aside").on("click", ".category-link", (event) => {
     let $allCategories = $(".goods-category");
-    let categoryId = $(event.currentTarget).parent().attr("class").substring(14);
+    const categoryId = $(event.currentTarget).parent().attr("class").substring(14);
     if (categoryId !== "id-all") {
       $allCategories.show();
       let $otherCategories = $allCategories.not(`.${categoryId}`);
@@ -165,7 +166,7 @@ $(function () {
 
   // increase quantity of item in cart from catalog
   $(".global-main").on("click", ".card-buy", (event) => {
-    let id = $(event.currentTarget).parent().parent().attr("class").substring(8);
+    const id = $(event.currentTarget).parent().parent().attr("class").substring(8);
     if (goodsInCart.has(id)) {
       goodsInCart.set(id, goodsInCart.get(id) + 1);
     } else {
@@ -174,22 +175,22 @@ $(function () {
   });
 
   // increase quantity of item in cart from cart
-  $(".cart").on("click", ".cart-item-inc-count", (event) => {
+  $cart.on("click", ".cart-item-inc-count", (event) => {
     let $goods = $(event.currentTarget).parent().parent().parent();
-    let id = $goods.attr("class").substring(8);
+    const id = $goods.attr("class").substring(8);
 
-    let count = goodsInCart.get(id) + 1;
+    const count = goodsInCart.get(id) + 1;
 
     goodsInCart.set(id, count);
     $(event.currentTarget).siblings(".cart-item-count").text(count);
   });
 
   // decrease quantity of item in cart from cart
-  $(".cart").on("click", ".cart-item-dec-count", (event) => {
+  $cart.on("click", ".cart-item-dec-count", (event) => {
     let $goods = $(event.currentTarget).parent().parent().parent();
-    let id = $goods.attr("class").substring(8);
+    const id = $goods.attr("class").substring(8);
 
-    let count = goodsInCart.get(id) - 1;
+    const count = goodsInCart.get(id) - 1;
 
     if (count > 0) {
       goodsInCart.set(id, count);
@@ -198,6 +199,15 @@ $(function () {
       goodsInCart.delete(id);
       updateCart(goodsInCart);
     }
+  });
+
+  // deleting item in cart
+  $cart.on("click", ".cart-item-delete", (event) => {
+    let $goods = $(event.currentTarget).parent().parent();
+    const id = $goods.attr("class").substring(8);
+
+    goodsInCart.delete(id);
+    updateCart(goodsInCart);
   });
 
 });
