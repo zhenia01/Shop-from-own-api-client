@@ -18,7 +18,7 @@ function getFromApi(url, onSuccess) {
 }
 
 // convert from object{name, image_url, price, special_price} to html element
-function makeCard(obj) {
+function makeCardAtShop(obj) {
   let price;
   if (obj["special_price"] !== null) { // has discount
     price =
@@ -28,7 +28,7 @@ function makeCard(obj) {
     price = `<p class="item-price">${obj['price']} грн</p>`
   }
 
-  return `<div class="card">
+  return `<div class="card id-${obj['id']}">
     <img src="${obj['image_url']}" class="card-img" alt="${obj['name']}">
     <div class="card-body">
       <h4 class="card-title"><a class="card-title-link" href="#">${obj['name']}</a></h4>
@@ -39,6 +39,16 @@ function makeCard(obj) {
     </div>
   </div>
   `
+}
+
+function updateCart(goodsInCart) {
+  let $cart = $(".cart-modal");
+  for (const [id, count] of goodsInCart.entries()) {
+    getFromApi(`https://nit.tron.net.ua/api/product/${id}`, (json) => {
+      let $container = $(".cart-modal > main");
+      $container.append(makeCardAtShop(json));
+    });
+  }
 }
 
 
@@ -58,7 +68,7 @@ $(function () {
 
   // create "All categories" 
   getFromApi("https://nit.tron.net.ua/api/category/list", (categoriesJson) => {
-    let $main = $("main").first();
+    let $main = $(".global-main").first();
     for (const category of categoriesJson) {
       // $main.append(`<h1 class="category">${category['name']}</h1>`);
       $main.append(
@@ -71,7 +81,7 @@ $(function () {
       getFromApi(`https://nit.tron.net.ua/api/product/list/category/${category["id"]}`, (goodsJson) => {
         let $container = $(`.goods-category.id-${category["id"]} > .goods-container`);
         for (const item of goodsJson) {
-          $container.append(makeCard(item));
+          $container.append(makeCardAtShop(item));
         }
       });
     }
@@ -108,7 +118,27 @@ $(function () {
     }
   });
 
-  
+  let goodsInCart = new Map();
+
+  // open cart modal window
+  $(".cart-img").on("click", () => {
+    if (goodsInCart.length === 0) {
+      $(".empty-cart-modal").modal();
+    } else {
+      updateCart(goodsInCart);
+      $(".cart-modal").modal();
+    }
+  });
+
+  // updating cart
+  $(".global-main").on("click", ".card-buy", (event) => {
+    let id = $(event.currentTarget).parent().parent().attr("class").substring(8);
+    if (goodsInCart.has(id)) {
+      goodsInCart.set(id, goodsInCart.get(id)+1);
+    } else {
+      goodsInCart.set(id, 1);
+    }
+  });
 
 });
 

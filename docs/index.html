@@ -10,7 +10,7 @@
 
 <body>
 
-  <header>
+  <header class="global-header">
     <nav class="navbar">
       <img src="img/menu.svg" class="navbar-menu-button" alt="menu" title="menu">
       <a class="navbar-logo" href="#"><img src="img/logo.png" class="logo" alt="logo" title="Online Shop">
@@ -38,11 +38,25 @@
     </nav>
   </aside>
 
-  <main>
-    
+  <main class="global-main">
+
   </main>
 
-  <footer>
+  <div class="cart-modal" style="display: none">
+    <main>
+
+    </main>
+    <footer>
+      <!-- <p class="total-price"></p>
+      <button class="cart-buy">Buy</button> -->
+    </footer>
+  </div>
+
+  <div class="empty-cart-modal" style="display: none">
+    <p>Sorry, your cart is empty</p>
+  </div>
+
+  <footer class="global-footer">
     <div class="author">
       <p>&copy;2019 Yevhen Borodaikevych</p>
     </div>
