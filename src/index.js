@@ -86,7 +86,7 @@ function updateCart(goodsInCart) {
 }
 
 function updateTotalPrice(goodsInCart) {
-  
+
   $(".total-price").text("0");
 
   for (const [id, count] of goodsInCart.entries()) {
@@ -104,6 +104,13 @@ function updateTotalPrice(goodsInCart) {
     });
   }
 
+}
+
+function updateGoodsCount(offset) {
+  let $goodsCount = $(".goods-count");
+  const newCount = parseInt($goodsCount.text()) + offset;
+  $goodsCount.text(`${newCount}`);
+  $(".cart-img").css("right", `${$goodsCount.width() + 10}px`);
 }
 
 $(function () {
@@ -194,6 +201,7 @@ $(function () {
     } else {
       goodsInCart.set(id, 1);
     }
+    updateGoodsCount(1);
   });
 
   // increase quantity of item in cart from cart
@@ -206,6 +214,7 @@ $(function () {
     goodsInCart.set(id, count);
     $(event.currentTarget).siblings(".cart-item-count").text(count);
     updateTotalPrice(goodsInCart);
+    updateGoodsCount(1);
   });
 
   // decrease quantity of item in cart from cart
@@ -224,6 +233,7 @@ $(function () {
       updateTotalPrice(goodsInCart);
       updateCart(goodsInCart);
     }
+    updateGoodsCount(-1);
   });
 
   // deleting item in cart
@@ -231,12 +241,13 @@ $(function () {
     let $goods = $(event.currentTarget).parent().parent();
     const id = $goods.attr("class").substring(8);
 
+    updateGoodsCount(-goodsInCart.get(id));
     goodsInCart.delete(id);
     updateTotalPrice(goodsInCart);
     updateCart(goodsInCart);
   });
 
-  
+
 
 });
 
