@@ -8,7 +8,7 @@
   <title>Online Api Shop</title>
 </head>
 
-<body>
+<body class="global-body">
 
   <header class="global-header">
     <nav class="navbar">
@@ -30,7 +30,7 @@
     </nav>
   </header>
 
-  <aside>
+  <aside class="categories-aside">
     <nav class="categories-navbar">
       <ul class="categories-nav">
 
@@ -42,15 +42,34 @@
 
   </main>
 
+  <div class="card-modal" style="display: none">
+
+  </div>
+
   <div class="cart-modal" style="display: none">
     <div class="cart">
       <main>
-  
+
       </main>
       <footer class="cart-footer">
-        <p class="total-price">0</p>
-        <button class="cart-buy">Buy</button>
+        <form class="payment-form">
+          <fieldset class="payment-fieldset">
+            <legend class="paymentform-title"></legend>
+            <p>
+              <input type="text" class="payment-form-name" placeholder="Name">
+            </p>
+            <p>
+              <input type="email" class="payment-form-email" placeholder="E-mail">
+            </p>
+            <p>
+              <input type="tel" class="payment-form-phone" placeholder="Phone">
+            </p>
+            <p class="total-price">0</p>
+            <button class="cart-buy">Buy</button>
+          </fieldset>
+        </form>
       </footer>
+      <div class="validation-modal" style="display: hidden;"></div>
     </div>
   </div>
 

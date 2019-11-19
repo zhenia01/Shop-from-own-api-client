@@ -31,7 +31,7 @@ function makeCardAtShop(obj) {
   return `<div class="card id-${obj['id']}">
     <img src="${obj['image_url']}" class="card-img" alt="${obj['name']}">
     <div class="card-body">
-      <h4 class="card-title"><a class="card-title-link" href="#">${obj['name']}</a></h4>
+      <h4 class="card-title"><a class="card-title-link">${obj['name']}</a></h4>
       <div class="card-price">
       ${price}
       </div>
@@ -65,6 +65,31 @@ function makeCardAtCart(obj, count) {
         <div class="cart-item-count">${count}</div>
         <img src="./img/plus.png" alt="+" class="cart-item-inc-count">
       </div>
+    </div>
+  </div>
+  `
+}
+
+// convert from object to html element for card in goods modal window
+function makeCardAtGoodsModal(obj) {
+  let price;
+  if (obj["special_price"] !== null) { // has discount
+    price =
+      `<p class="item-price">${obj['special_price']} грн</p>
+     <p class="item-old-price">${obj['price']} грн</p>`
+  } else {
+    price = `<p class="item-price">${obj['price']} грн</p>`
+  }
+
+  return `<div class="card id-${obj['id']}">
+    <img src="${obj['image_url']}" class="card-img" alt="${obj['name']}">
+    <div class="card-body">
+      <h4 class="card-title"><a class="card-title-link" href="#">${obj['name']}</a></h4>
+      <p class="card-description">${obj['description']}</p>
+      <div class="card-price">
+      ${price}
+      </div>
+      <button class="card-buy">Buy</button>
     </div>
   </div>
   `
@@ -111,6 +136,17 @@ function updateGoodsCount(offset) {
   const newCount = parseInt($goodsCount.text()) + offset;
   $goodsCount.text(`${newCount}`);
   $(".cart-img").css("right", `${$goodsCount.width() + 10}px`);
+}
+
+// styling form in case of invalid input
+function styleForm(input, isInvalid) {
+  let $input = $(`.payment-form-${input}`);
+  if (isInvalid) {
+    $input.css("border", "1px solid #F00");
+  } else {
+    $input.css("border", "none");
+    $input.css("border-bottom", "1px solid #ddd");
+  }
 }
 
 $(function () {
@@ -247,7 +283,88 @@ $(function () {
     updateCart(goodsInCart);
   });
 
+  // modal window for goods description
+  let $cardModal = $(".card-modal");
+  $(".global-main, .cart-modal").on("click", ".card-title", (event) => {
+    const id = $(event.currentTarget).parent().parent().attr("class").substring(8);
+    getFromApi(`https://nit.tron.net.ua/api/product/${id}`, (json) => {
+      $cardModal.html(makeCardAtGoodsModal(json));
+    });
+    $cardModal.modal({
+      closeExisting: false
+    });
+  });
+
+  $(".cart-buy").on("click", (event) => {
+    event.preventDefault();
+
+    let name = $(".payment-form-name").val();
+    let phone = $(".payment-form-phone").val();
+    let email = $(".payment-form-email").val();
+
+    let products = {};
+    for (const [id, count] of goodsInCart.entries()) {
+      products[id] = count;
+    }
+
+    $.ajax({
+      url: "https://nit.tron.net.ua/api/order/add",
+      dataType: "json",
+      type: "POST",
+      data: {
+        token: "WAB-fwf0snJOZznw0WPu",
+        name: name,
+        phone: phone,
+        email: email,
+        products: products
+      },
+      success: (json) => {
+        switch (json["status"]) {
+          case "error":
+
+            const errors = json["errors"];
+
+            styleForm("email", "email" in errors);
+            styleForm("phone", "phone" in errors);
+            styleForm("name", "name" in errors);
+
+            let $errorModal = $(".validation-modal");
+            $errorModal.empty();
+
+            for (const error in errors) {
+              for (const msg of errors[error]) {
+                $errorModal.append(`<p>${msg}</p>`);
+              }
+            }
+            
+            $errorModal.modal({
+              closeExisting: false
+            });
+
+            break;
+          case "success":
+            
+            let $successModal = $(".validation-modal");
+            $successModal.empty();
+
+            $successModal.append(`<p>Your order is confirmed</p>`)
+            
+            $successModal.modal();
+
+            updateGoodsCount(-parseInt($(".goods-count").text()));
+
+            goodsInCart.clear();
+
+            break;
+        }
+      },
+      error: (request, status, error) => {
+        alert("An error occured: " + request.responseText);
+      }
+    });
+  });
 
 
 });
+
 
