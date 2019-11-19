@@ -19,80 +19,109 @@ function getFromApi(url, onSuccess) {
 
 // convert object to html element for card in catalog
 function makeCardAtShop(obj) {
-  let price;
+  let $card = $("<div>", {
+    "class": `card id-${obj['id']}`
+  });
+
+  let $img = $("<img>", {
+    "class": "card-img",
+    src: `${obj['image_url']}`,
+    alt: `${obj['name']}`
+  });
+
+  let $price = $("<div>", { "class": "card-price" });
   if (obj["special_price"] !== null) { // has discount
-    price =
-      `<p class="item-price">${obj['special_price']} грн</p>
-     <p class="item-old-price">${obj['price']} грн</p>`
+    let $currentPrice = $("<p>", { "class": "item-price" }).text(`${obj['special_price']} грн`);
+    let $oldPrice = $("<p>", { "class": "item-old-price" }).text(`${obj['price']} грн`);
+    $price.append($currentPrice, $oldPrice);
   } else {
-    price = `<p class="item-price">${obj['price']} грн</p>`
+    let $currentPrice = $("<p>", { "class": "item-price" }).text(`${obj['price']} грн`);
+    $price.append($currentPrice);
   }
 
-  return `<div class="card id-${obj['id']}">
-    <img src="${obj['image_url']}" class="card-img" alt="${obj['name']}">
-    <div class="card-body">
-      <h4 class="card-title"><a class="card-title-link">${obj['name']}</a></h4>
-      <div class="card-price">
-      ${price}
-      </div>
-      <button class="card-buy">Buy</button>
-    </div>
-  </div>
-  `
+  let $cardBody = $("<div>", { "class": "card-body" });
+  let $cardTitle = $("<h4>", { "class": "card-title" }).append($("<a>", { "class": "card-title-link" }).text(`${obj['name']}`));
+  let $cardBuy = $("<button>", { "class": "card-buy" }).text("Buy");
+
+  $cardBody.append($cardTitle, $price, $cardBuy);
+
+  return $card.append($img, $cardBody);
 }
 
 // convert object to html element for card in cart
 function makeCardAtCart(obj, count) {
-  let price;
+  let $card = $("<div>", {
+    "class": `card id-${obj['id']}`
+  });
+
+  let $img = $("<img>", {
+    "class": "card-img",
+    src: `${obj['image_url']}`,
+    alt: `${obj['name']}`
+  });
+
+  let $price = $("<div>", { "class": "card-price" });
   if (obj["special_price"] !== null) { // has discount
-    price =
-      `<p class="item-price">${obj['special_price']} грн</p>
-     <p class="item-old-price">${obj['price']} грн</p>`
+    let $currentPrice = $("<p>", { "class": "item-price" }).text(`${obj['special_price']} грн`);
+    let $oldPrice = $("<p>", { "class": "item-old-price" }).text(`${obj['price']} грн`);
+    $price.append($currentPrice, $oldPrice);
   } else {
-    price = `<p class="item-price">${obj['price']} грн</p>`
+    let $currentPrice = $("<p>", { "class": "item-price" }).text(`${obj['price']} грн`);
+    $price.append($currentPrice);
   }
 
-  return `<div class="card id-${obj['id']}">
-    <img src="${obj['image_url']}" class="card-img" alt="${obj['name']}">
-    <div class="card-body">
-      <h4 class="card-title"><a class="card-title-link" href="#">${obj['name']}</a></h4>
-      <div class="card-price">
-      ${price}
-      </div>
-      <img src="./img/trash.png" alt="trash" class="cart-item-delete">
-      <div class='cart-item-count-setter'>
-        <img src="./img/minus.png" alt="-" class="cart-item-dec-count">
-        <div class="cart-item-count">${count}</div>
-        <img src="./img/plus.png" alt="+" class="cart-item-inc-count">
-      </div>
-    </div>
-  </div>
-  `
+  let $cardBody = $("<div>", { "class": "card-body" });
+  let $cardTitle = $("<h4>", { "class": "card-title" }).append($("<a>", { "class": "card-title-link" }).text(`${obj['name']}`));
+
+  let $cartItemCountSetter = $("<div>", { "class": "cart-item-count-setter" });
+  let $cartItemCount = $("<div>", { "class": "cart-item-count" }).text(`${count}`);
+  let $cartItemDecCount = $("<img>", {
+    "class": "cart-item-dec-count",
+    alt: "-",
+    src: "./img/minus.png"
+  });
+  let $cartItemIncCount = $("<img>", {
+    "class": "cart-item-inc-count",
+    alt: "+",
+    src: "./img/plus.png"
+  });
+  $cartItemCountSetter.append($cartItemDecCount, $cartItemCount, $cartItemIncCount);
+
+  $cardBody.append($cardTitle, $price, $cartItemCountSetter);
+
+  return $card.append($img, $cardBody);
 }
 
 // convert from object to html element for card in goods modal window
 function makeCardAtGoodsModal(obj) {
-  let price;
+  let $card = $("<div>", {
+    "class": `card id-${obj['id']}`
+  });
+
+  let $img = $("<img>", {
+    "class": "card-img",
+    src: `${obj['image_url']}`,
+    alt: `${obj['name']}`
+  });
+
+  let $price = $("<div>", { "class": "card-price" });
   if (obj["special_price"] !== null) { // has discount
-    price =
-      `<p class="item-price">${obj['special_price']} грн</p>
-     <p class="item-old-price">${obj['price']} грн</p>`
+    let $currentPrice = $("<p>", { "class": "item-price" }).text(`${obj['special_price']} грн`);
+    let $oldPrice = $("<p>", { "class": "item-old-price" }).text(`${obj['price']} грн`);
+    $price.append($currentPrice, $oldPrice);
   } else {
-    price = `<p class="item-price">${obj['price']} грн</p>`
+    let $currentPrice = $("<p>", { "class": "item-price" }).text(`${obj['price']} грн`);
+    $price.append($currentPrice);
   }
 
-  return `<div class="card id-${obj['id']}">
-    <img src="${obj['image_url']}" class="card-img" alt="${obj['name']}">
-    <div class="card-body">
-      <h4 class="card-title"><a class="card-title-link" href="#">${obj['name']}</a></h4>
-      <p class="card-description">${obj['description']}</p>
-      <div class="card-price">
-      ${price}
-      </div>
-      <button class="card-buy">Buy</button>
-    </div>
-  </div>
-  `
+  let $cardBody = $("<div>", { "class": "card-body" });
+  let $cardTitle = $("<h4>", { "class": "card-title" }).append($("<a>", { "class": "card-title-link" }).text(`${obj['name']}`));
+  let $cardDescription = $("<p>", { "class": "card-description" }).text(`${obj['description']}`);
+  let $cardBuy = $("<button>", { "class": "card-buy" }).text("Buy");
+
+  $cardBody.append($cardTitle, $cardDescription, $price, $cardBuy);
+
+  return $card.append($img, $cardBody);
 }
 
 function updateCart(goodsInCart) {
@@ -144,8 +173,10 @@ function styleForm(input, isInvalid) {
   if (isInvalid) {
     $input.css("border", "1px solid #F00");
   } else {
-    $input.css("border", "none");
-    $input.css("border-bottom", "1px solid #ddd");
+    $input.css({
+      "border": "none",
+      "border-bottom": "1px solid #ddd"
+    });
   }
 }
 
@@ -161,21 +192,29 @@ $(function () {
     categoriesNav.append(`<li class="category-item id-all"><a class="category-link">All categories</a></li>`)
     for (const category of json) {
       categories.push(category["id"]);
-      categoriesNav.append(`<li class="category-item id-${category['id']}"><a class="category-link">${category["name"]}</a></li>`)
+
+      let $categoryItem = $("<li>", { "class": `category-item id-${category['id']}` });
+      let $categoryLink = $("<a>", { "class": "category-link" }).text(`${category["name"]}`);
+      $categoryItem.append($categoryLink);
+
+      categoriesNav.append($categoryItem);
     }
   });
 
   // create "All categories" 
   getFromApi("https://nit.tron.net.ua/api/category/list", (categoriesJson) => {
-    let $main = $(".global-main").first();
+    let $main = $(".global-main");
     for (const category of categoriesJson) {
-      // $main.append(`<h1 class="category">${category['name']}</h1>`);
-      $main.append(
-        `<section class="goods-category id-${category['id']}">
-          <h1 class="category-title">${category['name']}</h1>
-          <h3 class="category-description">${category['description']}</h3>
-          <div class="goods-container"></div>
-        </section>`);
+
+      let $goodsCategory = $("<section>", { "class": `goods-category id-${category['id']}` });
+
+      let $categoryTitle = $("<h1>", {"class": "category-title"}).text(`${category['name']}`);
+      let $categoryDescription = $("<h3>", {"class": "category-description"}).text(`${category['description']}`);
+      let $goodsContainer = $("<div>", {"class": "goods-container"});
+
+      $goodsCategory.append($categoryTitle, $categoryDescription, $goodsContainer);
+
+      $main.append($goodsCategory);
 
       getFromApi(`https://nit.tron.net.ua/api/product/list/category/${category["id"]}`, (goodsJson) => {
         let $container = $(`.goods-category.id-${category["id"]} > .goods-container`);
@@ -188,7 +227,7 @@ $(function () {
 
   // pop-up menu on mobiles
   $(".navbar-menu-button").on("click", () => {
-    let $navbarNav = $(".navbar-nav").first();
+    let $navbarNav = $(".navbar-nav");
     $navbarNav.toggleClass("opened");
     $(".navbar-nav .nav-item").toggleClass("opened");
   });
@@ -295,6 +334,7 @@ $(function () {
     });
   });
 
+  // validating and confirming order 
   $(".cart-buy").on("click", (event) => {
     event.preventDefault();
 
@@ -336,23 +376,20 @@ $(function () {
                 $errorModal.append(`<p>${msg}</p>`);
               }
             }
-            
+
             $errorModal.modal({
               closeExisting: false
             });
 
             break;
           case "success":
-            
+
             let $successModal = $(".validation-modal");
             $successModal.empty();
-
             $successModal.append(`<p>Your order is confirmed</p>`)
-            
             $successModal.modal();
 
             updateGoodsCount(-parseInt($(".goods-count").text()));
-
             goodsInCart.clear();
 
             break;
