@@ -14,7 +14,6 @@ html {
   margin: 0;
   min-height: 100vh;
   display: grid;
-  // gap: 5px;
   grid-template-columns: repeat(18, 1fr);
   grid-template-rows: 3rem 0 auto 130px;
   grid-template-areas:
@@ -78,14 +77,6 @@ html {
   top: 0;
   font-size: 3rem;
   color: white;
-}
-
-.nav-item:first-child {
-  visibility: hidden;
-}
-
-.nav-item:last-child {
-  visibility: hidden;
 }
 
 .nav-item {
@@ -191,7 +182,6 @@ html {
 
 .card {
   padding: 0.5rem;
-  // min-width: 300px;
   position: relative;
   background-color: #fff;
   border: 1px solid rgba(0, 0, 0, 0.075);
@@ -201,7 +191,6 @@ html {
   display: block;
   height: 400px;
   width: 100%;
-  // min-width: 300px;
   max-width: 450px;
   margin: 0 auto;
   padding: 1rem;
@@ -269,6 +258,7 @@ html {
 
 .item-old-price {
   display: inline-block;
+  margin-left: 5px;
   margin-top: 0;
   font-size: 0.9rem;
   text-decoration: line-through;
@@ -321,6 +311,8 @@ html {
   bottom: 0.4rem;
   display: inline-block;
   font-size: 2rem;
+  margin-left: 5px;
+  margin-right: 5px;
 }
 
 .cart-item-inc-count,
@@ -376,7 +368,7 @@ html {
 }
 
 .card-modal.modal {
-  max-width: 60vw !important;
+  max-width: 60vw !important; // custom style
 }
 
 .payment-form {
@@ -532,11 +524,13 @@ html {
   }
 
   .modal {
+    // custom style
     padding-left: 10px !important;
     padding-right: 10px !important;
   }
 
   .card-modal.modal {
+    // custom style
     max-width: 90vw !important;
   }
 }
