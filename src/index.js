@@ -5,6 +5,227 @@ import $ from "jquery"
 import "jquery-modal"
 import "jquery-modal/jquery.modal.min.css"
 
+$(function () {
+
+  let categories = [];
+  let goodsInCart = new Map();
+  let $cart = $(".cart");
+
+  // create categories navbar
+  getFromApi("https://nit.tron.net.ua/api/category/list", (json) => {
+    let categoriesNav = $(".categories-nav").first();
+    categoriesNav.append(`<li class="category-item id-all"><a class="category-link">All categories</a></li>`)
+    for (const category of json) {
+      categories.push(category["id"]);
+
+      let $categoryItem = $("<li>", { "class": `category-item id-${category['id']}` });
+      let $categoryLink = $("<a>", { "class": "category-link" }).text(`${category["name"]}`);
+      $categoryItem.append($categoryLink);
+
+      categoriesNav.append($categoryItem);
+    }
+  });
+
+  // create "All categories" 
+  getFromApi("https://nit.tron.net.ua/api/category/list", (categoriesJson) => {
+    let $main = $(".global-main");
+    for (const category of categoriesJson) {
+
+      let $goodsCategory = $("<section>", { "class": `goods-category id-${category['id']}` });
+
+      let $categoryTitle = $("<h1>", {"class": "category-title"}).text(`${category['name']}`);
+      let $categoryDescription = $("<h3>", {"class": "category-description"}).text(`${category['description']}`);
+      let $goodsContainer = $("<div>", {"class": "goods-container"});
+
+      $goodsCategory.append($categoryTitle, $categoryDescription, $goodsContainer);
+
+      $main.append($goodsCategory);
+
+      getFromApi(`https://nit.tron.net.ua/api/product/list/category/${category["id"]}`, (goodsJson) => {
+        let $container = $(`.goods-category.id-${category["id"]} > .goods-container`);
+        for (const item of goodsJson) {
+          $container.append(makeCardAtShop(item));
+        }
+      });
+    }
+  });
+
+  // pop-up menu on mobiles
+  $(".navbar-menu-button").on("click", () => {
+    let $navbarNav = $(".navbar-nav");
+    $navbarNav.toggleClass("opened");
+    $(".navbar-nav .nav-item").toggleClass("opened");
+  });
+
+  // showing categories
+  $(".nav-link").first().on("click", () => {
+    let $categoriesNavbar = $("aside").first();
+    $categoriesNavbar.toggleClass("opened");
+    let $navbarNav = $(".navbar-nav");
+    if ($navbarNav.hasClass("opened")) {
+      $navbarNav.toggleClass("opened");
+      $(".navbar-nav .nav-item").toggleClass("opened");
+    }
+  });
+
+  // show chosen category and hide other
+  $("aside").on("click", ".category-link", (event) => {
+    let $allCategories = $(".goods-category");
+    const categoryId = getId(event.currentTarget);
+    if (categoryId !== "all") {
+      $allCategories.show();
+      let $otherCategories = $allCategories.not(`.id-${categoryId}`);
+      $otherCategories.hide();
+    } else {
+      $allCategories.show();
+    }
+  });
+
+  // open cart modal window
+  $(".cart-img").on("click", () => {
+    if (goodsInCart.size === 0) {
+      $(".empty-cart-modal").modal();
+    } else {
+      let $cart = $(".cart-modal");
+      updateTotalPrice(goodsInCart);
+      updateCart(goodsInCart);
+      $cart.modal();
+    }
+  });
+
+  // buy item from catalog / increase quantity of item in cart from catalog
+  $(".global-main").on("click", ".card-buy", (event) => {
+    const id = getId(event.currentTarget);
+    if (goodsInCart.has(id)) {
+      goodsInCart.set(id, goodsInCart.get(id) + 1);
+    } else {
+      goodsInCart.set(id, 1);
+    }
+    updateGoodsCount(1);
+  });
+
+  // increase quantity of item in cart from cart
+  $cart.on("click", ".cart-item-inc-count", (event) => {
+    const id = getId(event.currentTarget);
+
+    const count = goodsInCart.get(id) + 1;
+
+    goodsInCart.set(id, count);
+    $(event.currentTarget).siblings(".cart-item-count").text(count);
+    updateTotalPrice(goodsInCart);
+    updateGoodsCount(1);
+  });
+
+  // decrease quantity of item in cart from cart
+  $cart.on("click", ".cart-item-dec-count", (event) => {
+    const id = getId(event.currentTarget);
+
+    const count = goodsInCart.get(id) - 1;
+
+    if (count > 0) {
+      goodsInCart.set(id, count);
+      $(event.currentTarget).siblings(".cart-item-count").text(count);
+      updateTotalPrice(goodsInCart);
+    } else {
+      goodsInCart.delete(id);
+      updateTotalPrice(goodsInCart);
+      updateCart(goodsInCart);
+    }
+    updateGoodsCount(-1);
+  });
+
+  // deleting item in cart
+  $cart.on("click", ".cart-item-delete", (event) => {
+    const id = getId(event.currentTarget);
+
+    updateGoodsCount(-goodsInCart.get(id));
+    goodsInCart.delete(id);
+    updateTotalPrice(goodsInCart);
+    updateCart(goodsInCart);
+  });
+
+  // modal window for goods description
+  let $cardModal = $(".card-modal");
+  $(".global-main, .cart-modal").on("click", ".card-img, .card-title, .card-price", (event) => {
+    const id = getId(event.currentTarget);
+    
+    getFromApi(`https://nit.tron.net.ua/api/product/${id}`, (json) => {
+      $cardModal.html(makeCardAtGoodsModal(json));
+    });
+    $cardModal.modal({
+      closeExisting: false
+    });
+    event.stopPropagation();
+  });
+
+  // validating and confirming order 
+  $(".cart-buy").on("click", (event) => {
+    event.preventDefault();
+
+    const name = $(".payment-form-name").val();
+    const phone = $(".payment-form-phone").val();
+    const email = $(".payment-form-email").val();
+
+    let products = {};
+    for (const [id, count] of goodsInCart.entries()) {
+      products[id] = count;
+    }
+
+    $.ajax({
+      url: "https://nit.tron.net.ua/api/order/add",
+      dataType: "json",
+      type: "POST",
+      data: {
+        token: "WAB-fwf0snJOZznw0WPu",
+        name: name,
+        phone: phone,
+        email: email,
+        products: products
+      },
+      success: (json) => {
+        switch (json["status"]) {
+          case "error":
+
+            const errors = json["errors"];
+
+            styleForm("email", "email" in errors);
+            styleForm("phone", "phone" in errors);
+            styleForm("name", "name" in errors);
+
+            let $errorModal = $(".validation-modal");
+            $errorModal.empty();
+
+            for (const error in errors) {
+              for (const msg of errors[error]) {
+                $errorModal.append(`<p>${msg}</p>`);
+              }
+            }
+
+            $errorModal.modal({
+              closeExisting: false
+            });
+
+            break;
+          case "success":
+
+            let $successModal = $(".validation-modal");
+            $successModal.empty();
+            $successModal.append(`<p>Your order is confirmed</p>`)
+            $successModal.modal();
+
+            updateGoodsCount(-parseInt($(".goods-count").text()));
+            goodsInCart.clear();
+
+            break;
+        }
+      },
+      error: (request, status, error) => {
+        alert("An error occured: " + request.responseText);
+      }
+    });
+  });
+});
+
 function getFromApi(url, onSuccess) {
   $.ajax({
     url: url,
@@ -85,9 +306,18 @@ function makeCardAtCart(obj, count) {
     alt: "+",
     src: "./img/plus.png"
   });
+
+  {/* <img src="./img/trash.png" alt="trash" class="cart-item-delete"></img> */}
+
+  let $trash = $("<img>", {
+    alt: "trash",
+    "class": "cart-item-delete",
+    src: "./img/trash.png"
+  });
+
   $cartItemCountSetter.append($cartItemDecCount, $cartItemCount, $cartItemIncCount);
 
-  $cardBody.append($cardTitle, $price, $cartItemCountSetter);
+  $cardBody.append($cardTitle, $price, $trash, $cartItemCountSetter);
 
   return $card.append($img, $cardBody);
 }
@@ -180,226 +410,12 @@ function styleForm(input, isInvalid) {
   }
 }
 
-$(function () {
-
-  let categories = [];
-  let goodsInCart = new Map();
-  let $cart = $(".cart");
-
-  // create categories navbar
-  getFromApi("https://nit.tron.net.ua/api/category/list", (json) => {
-    let categoriesNav = $(".categories-nav").first();
-    categoriesNav.append(`<li class="category-item id-all"><a class="category-link">All categories</a></li>`)
-    for (const category of json) {
-      categories.push(category["id"]);
-
-      let $categoryItem = $("<li>", { "class": `category-item id-${category['id']}` });
-      let $categoryLink = $("<a>", { "class": "category-link" }).text(`${category["name"]}`);
-      $categoryItem.append($categoryLink);
-
-      categoriesNav.append($categoryItem);
-    }
-  });
-
-  // create "All categories" 
-  getFromApi("https://nit.tron.net.ua/api/category/list", (categoriesJson) => {
-    let $main = $(".global-main");
-    for (const category of categoriesJson) {
-
-      let $goodsCategory = $("<section>", { "class": `goods-category id-${category['id']}` });
-
-      let $categoryTitle = $("<h1>", {"class": "category-title"}).text(`${category['name']}`);
-      let $categoryDescription = $("<h3>", {"class": "category-description"}).text(`${category['description']}`);
-      let $goodsContainer = $("<div>", {"class": "goods-container"});
-
-      $goodsCategory.append($categoryTitle, $categoryDescription, $goodsContainer);
-
-      $main.append($goodsCategory);
-
-      getFromApi(`https://nit.tron.net.ua/api/product/list/category/${category["id"]}`, (goodsJson) => {
-        let $container = $(`.goods-category.id-${category["id"]} > .goods-container`);
-        for (const item of goodsJson) {
-          $container.append(makeCardAtShop(item));
-        }
-      });
-    }
-  });
-
-  // pop-up menu on mobiles
-  $(".navbar-menu-button").on("click", () => {
-    let $navbarNav = $(".navbar-nav");
-    $navbarNav.toggleClass("opened");
-    $(".navbar-nav .nav-item").toggleClass("opened");
-  });
-
-  // showing categories
-  $(".nav-link").first().on("click", () => {
-    let $categoriesNavbar = $("aside").first();
-    $categoriesNavbar.toggleClass("opened");
-    let $navbarNav = $(".navbar-nav");
-    if ($navbarNav.hasClass("opened")) {
-      $navbarNav.toggleClass("opened");
-      $(".navbar-nav .nav-item").toggleClass("opened");
-    }
-  });
-
-  // show chosen category and hide other
-  $("aside").on("click", ".category-link", (event) => {
-    let $allCategories = $(".goods-category");
-    const categoryId = $(event.currentTarget).closest(".category-item").attr("class").substring(14);
-    if (categoryId !== "id-all") {
-      $allCategories.show();
-      let $otherCategories = $allCategories.not(`.${categoryId}`);
-      $otherCategories.hide();
-    } else {
-      $allCategories.show();
-    }
-  });
-
-  // open cart modal window
-  $(".cart-img").on("click", () => {
-    if (goodsInCart.size === 0) {
-      $(".empty-cart-modal").modal();
-    } else {
-      let $cart = $(".cart-modal");
-      updateTotalPrice(goodsInCart);
-      updateCart(goodsInCart);
-      $cart.modal();
-    }
-  });
-
-  // buy item from catalog / increase quantity of item in cart from catalog
-  $(".global-main").on("click", ".card-buy", (event) => {
-    const id = $(event.currentTarget).closest(".card").attr("class").substring(8);
-    if (goodsInCart.has(id)) {
-      goodsInCart.set(id, goodsInCart.get(id) + 1);
-    } else {
-      goodsInCart.set(id, 1);
-    }
-    updateGoodsCount(1);
-  });
-
-  // increase quantity of item in cart from cart
-  $cart.on("click", ".cart-item-inc-count", (event) => {
-    const id = $(event.currentTarget).closest(".card").attr("class").substring(8);
-
-    const count = goodsInCart.get(id) + 1;
-
-    goodsInCart.set(id, count);
-    $(event.currentTarget).siblings(".cart-item-count").text(count);
-    updateTotalPrice(goodsInCart);
-    updateGoodsCount(1);
-  });
-
-  // decrease quantity of item in cart from cart
-  $cart.on("click", ".cart-item-dec-count", (event) => {
-    const id = $(event.currentTarget).closest(".card").attr("class").substring(8);
-
-    const count = goodsInCart.get(id) - 1;
-
-    if (count > 0) {
-      goodsInCart.set(id, count);
-      $(event.currentTarget).siblings(".cart-item-count").text(count);
-      updateTotalPrice(goodsInCart);
-    } else {
-      goodsInCart.delete(id);
-      updateTotalPrice(goodsInCart);
-      updateCart(goodsInCart);
-    }
-    updateGoodsCount(-1);
-  });
-
-  // deleting item in cart
-  $cart.on("click", ".cart-item-delete", (event) => {
-    const id = $(event.currentTarget).closest(".card").attr("class").substring(8);
-
-    updateGoodsCount(-goodsInCart.get(id));
-    goodsInCart.delete(id);
-    updateTotalPrice(goodsInCart);
-    updateCart(goodsInCart);
-  });
-
-  // modal window for goods description
-  let $cardModal = $(".card-modal");
-  $(".global-main, .cart-modal").on("click", ".card-title-link, .card-img", (event) => {
-    const id = $(event.currentTarget).closest(".card").attr("class").substring(8);
-    
-    getFromApi(`https://nit.tron.net.ua/api/product/${id}`, (json) => {
-      $cardModal.html(makeCardAtGoodsModal(json));
-    });
-    $cardModal.modal({
-      closeExisting: false
-    });
-  });
-
-  // validating and confirming order 
-  $(".cart-buy").on("click", (event) => {
-    event.preventDefault();
-
-    const name = $(".payment-form-name").val();
-    const phone = $(".payment-form-phone").val();
-    const email = $(".payment-form-email").val();
-
-    let products = {};
-    for (const [id, count] of goodsInCart.entries()) {
-      products[id] = count;
-    }
-
-    $.ajax({
-      url: "https://nit.tron.net.ua/api/order/add",
-      dataType: "json",
-      type: "POST",
-      data: {
-        token: "WAB-fwf0snJOZznw0WPu",
-        name: name,
-        phone: phone,
-        email: email,
-        products: products
-      },
-      success: (json) => {
-        switch (json["status"]) {
-          case "error":
-
-            const errors = json["errors"];
-
-            styleForm("email", "email" in errors);
-            styleForm("phone", "phone" in errors);
-            styleForm("name", "name" in errors);
-
-            let $errorModal = $(".validation-modal");
-            $errorModal.empty();
-
-            for (const error in errors) {
-              for (const msg of errors[error]) {
-                $errorModal.append(`<p>${msg}</p>`);
-              }
-            }
-
-            $errorModal.modal({
-              closeExisting: false
-            });
-
-            break;
-          case "success":
-
-            let $successModal = $(".validation-modal");
-            $successModal.empty();
-            $successModal.append(`<p>Your order is confirmed</p>`)
-            $successModal.modal();
-
-            updateGoodsCount(-parseInt($(".goods-count").text()));
-            goodsInCart.clear();
-
-            break;
-        }
-      },
-      error: (request, status, error) => {
-        alert("An error occured: " + request.responseText);
-      }
-    });
-  });
-
-
-});
+// get id of goods/category etc
+function getId(eventTarget) {
+  let classes = $(eventTarget).parents("[class*=' id-']").attr("class");
+  const id = classes.split(" ").filter(word => word.match(/\bid-/))[0].substring(3);
+ 
+  return id;
+}
 
 
