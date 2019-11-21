@@ -33,9 +33,9 @@ $(function () {
 
       let $goodsCategory = $("<section>", { "class": `goods-category id-${category['id']}` });
 
-      let $categoryTitle = $("<h1>", {"class": "category-title"}).text(`${category['name']}`);
-      let $categoryDescription = $("<h3>", {"class": "category-description"}).text(`${category['description']}`);
-      let $goodsContainer = $("<div>", {"class": "goods-container"});
+      let $categoryTitle = $("<h1>", { "class": "category-title" }).text(`${category['name']}`);
+      let $categoryDescription = $("<h3>", { "class": "category-description" }).text(`${category['description']}`);
+      let $goodsContainer = $("<div>", { "class": "goods-container" });
 
       $goodsCategory.append($categoryTitle, $categoryDescription, $goodsContainer);
 
@@ -148,7 +148,7 @@ $(function () {
   let $cardModal = $(".card-modal");
   $(".global-main, .cart-modal").on("click", ".card-img, .card-title, .card-price", (event) => {
     const id = getId(event.currentTarget);
-    
+
     getFromApi(`https://nit.tron.net.ua/api/product/${id}`, (json) => {
       $cardModal.html(makeCardAtGoodsModal(json));
     });
@@ -232,8 +232,16 @@ function getFromApi(url, onSuccess) {
     dataType: "json",
     type: "GET",
     success: onSuccess,
-    error: (request, status, error) => {
-      alert("An error occured: " + request.responseText);
+    error: (jqXHR, status, error) => {
+      alert('An error occurred... Look at the console (F12 or Ctrl+Shift+I, Console tab) for more information!');
+      
+      console.log("Error at GET method occured:");
+      console.log(`Link: ${url}`);
+      
+      const errorJson = jqXHR.responseJSON;
+      console.log(`Status: ${errorJson["status"]}`);
+      console.log(`Status Code: ${errorJson["statusCode"]}`);
+      console.log(`Status Text: ${errorJson["statusText"]}`);
     }
   });
 }
@@ -306,8 +314,6 @@ function makeCardAtCart(obj, count) {
     alt: "+",
     src: "./img/plus.png"
   });
-
-  {/* <img src="./img/trash.png" alt="trash" class="cart-item-delete"></img> */}
 
   let $trash = $("<img>", {
     alt: "trash",
@@ -414,7 +420,7 @@ function styleForm(input, isInvalid) {
 function getId(eventTarget) {
   let classes = $(eventTarget).parents("[class^='id-'], [class*=' id-']").attr("class");
   const id = classes.split(" ").filter(word => word.match(/\bid-/))[0].substring(3);
- 
+
   return id;
 }
 
