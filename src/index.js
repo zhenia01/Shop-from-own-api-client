@@ -412,7 +412,7 @@ function styleForm(input, isInvalid) {
 
 // get id of goods/category etc
 function getId(eventTarget) {
-  let classes = $(eventTarget).parents("[class*=' id-']").attr("class");
+  let classes = $(eventTarget).parents("[class^='id-'], [class*=' id-']").attr("class");
   const id = classes.split(" ").filter(word => word.match(/\bid-/))[0].substring(3);
  
   return id;
