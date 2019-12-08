@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./css/adminPanel.css">
+  <title>AdminPanel</title>
+</head>
+
+<body class="global-body">
+
+    <header class="global-header">
+        <nav class="navbar">
+          <a class="navbar-logo" href="#"><img src="img/logo.png" class="logo" alt="logo" title="Online Shop">
+          </a>
+          <ul class="navbar-nav">
+            <li class="nav-item" style="visibility: hidden"></li> <!-- blank item -->
+            <li class="nav-item"><a class="nav-link create-products" href="#">Create product</a></li>
+            <li class="nav-item"><a class="nav-link create-category" href="#">Create category</a></li>
+            <li class="nav-item"><a class="nav-link show-orders" href="#">Show orders</a></li>
+            <li class="nav-item" style="visibility: hidden"></li> <!-- blank item -->
+          </ul>
+        </nav>
+      </header>
+
+  <div class="auth" style="display: none">
+    <form class="auth-form">
+      <fieldset class="auth-fieldset">
+        <legend class="auth-title"></legend>
+        <p>
+          <input type="text" class="auth-form-username" placeholder="Username">
+        </p>
+        <p>
+          <input type="password" class="auth-form-password" placeholder="Password">
+        </p>
+        <button type="button" class="auth-submit">SIGN IN</button>
+      </fieldset>
+    </form>
+  </div>
+
+  <div class="orders">
+    
+  </div>
+
+  <script src="js/adminPanel.js"></script>
+</body>
+
+</html>
