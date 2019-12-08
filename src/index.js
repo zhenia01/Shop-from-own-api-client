@@ -166,61 +166,54 @@ $(function () {
     const phone = $(".payment-form-phone").val();
     const email = $(".payment-form-email").val();
 
-    let products = {};
+    let products = [];
     for (const [id, count] of goodsInCart.entries()) {
-      products[id] = count;
+      products.push({ "id": id, count: count });
     }
 
     $.ajax({
-      url: "https://nit.tron.net.ua/api/order/add",
+      url: "http://localhost:3000/api/order/add",
       dataType: "json",
       type: "POST",
       data: {
-        token: "WAB-fwf0snJOZznw0WPu",
         name: name,
         phone: phone,
         email: email,
         products: products
       },
       success: (json) => {
-        switch (json["status"]) {
-          case "error":
+        let $successModal = $(".validation-modal");
+        $successModal.empty();
+        $successModal.append(`<p>Your order is confirmed</p>`)
+        $successModal.modal();
 
-            const errors = json["errors"];
-
-            styleForm("email", "email" in errors);
-            styleForm("phone", "phone" in errors);
-            styleForm("name", "name" in errors);
-
-            let $errorModal = $(".validation-modal");
-            $errorModal.empty();
-
-            for (const error in errors) {
-              for (const msg of errors[error]) {
-                $errorModal.append(`<p>${msg}</p>`);
-              }
-            }
-
-            $errorModal.modal({
-              closeExisting: false
-            });
-
-            break;
-          case "success":
-
-            let $successModal = $(".validation-modal");
-            $successModal.empty();
-            $successModal.append(`<p>Your order is confirmed</p>`)
-            $successModal.modal();
-
-            updateGoodsCount(-parseInt($(".goods-count").text()));
-            goodsInCart.clear();
-
-            break;
-        }
+        updateGoodsCount(-parseInt($(".goods-count").text()));
+        goodsInCart.clear();
       },
       error: (request, status, error) => {
-        alert("An error occured: " + request.responseText);
+
+        const errors = request.responseJSON["message"];
+        
+        const errorFields = errors.map((err => err["property"]));
+
+        styleForm("email", errorFields.indexOf("email") != -1);
+        styleForm("phone", errorFields.indexOf("phone") != -1);
+        styleForm("name", errorFields.indexOf("name") != -1);
+
+        let $errorModal = $(".validation-modal");
+        $errorModal.empty();
+
+        for (const error of errors) {
+          const constraints = error['constraints'];
+          for (const msg in constraints) {
+            $errorModal.append(`<p>${constraints[msg]}</p>`);
+          }
+        }
+
+        $errorModal.modal({
+          closeExisting: false
+        });
+
       }
     });
   });
@@ -234,10 +227,10 @@ function getFromApi(url, onSuccess) {
     success: onSuccess,
     error: (jqXHR, status, error) => {
       alert('An error occurred... Look at the console (F12 or Ctrl+Shift+I, Console tab) for more information!');
-      
+
       console.log("Error at GET method occured:");
       console.log(`Link: ${url}`);
-      
+
       const errorJson = jqXHR.responseJSON;
       console.log(`Status: ${errorJson["status"]}`);
       console.log(`Status Code: ${errorJson["statusCode"]}`);
