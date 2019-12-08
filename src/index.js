@@ -12,7 +12,7 @@ $(function () {
   let $cart = $(".cart");
 
   // create categories navbar
-  getFromApi("https://nit.tron.net.ua/api/category/list", (json) => {
+  getFromApi("http://localhost:3000/api/category/list", (json) => {
     let categoriesNav = $(".categories-nav").first();
     categoriesNav.append(`<li class="category-item id-all"><a class="category-link">All categories</a></li>`)
     for (const category of json) {
@@ -27,7 +27,7 @@ $(function () {
   });
 
   // create "All categories" 
-  getFromApi("https://nit.tron.net.ua/api/category/list", (categoriesJson) => {
+  getFromApi("http://localhost:3000/api/category/list", (categoriesJson) => {
     let $main = $(".global-main");
     for (const category of categoriesJson) {
 
@@ -41,7 +41,7 @@ $(function () {
 
       $main.append($goodsCategory);
 
-      getFromApi(`https://nit.tron.net.ua/api/product/list/category/${category["id"]}`, (goodsJson) => {
+      getFromApi(`http://localhost:3000/api/product/list/category/${category["id"]}`, (goodsJson) => {
         let $container = $(`.goods-category.id-${category["id"]} > .goods-container`);
         for (const item of goodsJson) {
           $container.append(makeCardAtShop(item));
@@ -149,7 +149,7 @@ $(function () {
   $(".global-main, .cart-modal").on("click", ".card-img, .card-title, .card-price", (event) => {
     const id = getId(event.currentTarget);
 
-    getFromApi(`https://nit.tron.net.ua/api/product/${id}`, (json) => {
+    getFromApi(`http://localhost:3000/api/product/${id}`, (json) => {
       $cardModal.html(makeCardAtGoodsModal(json));
     });
     $cardModal.modal({
@@ -365,7 +365,7 @@ function updateCart(goodsInCart) {
   $container.empty();
   if (goodsInCart.size > 0) {
     for (const [id, count] of goodsInCart.entries()) {
-      getFromApi(`https://nit.tron.net.ua/api/product/${id}`, (json) => {
+      getFromApi(`http://localhost:3000/api/product/${id}`, (json) => {
         $container.append(makeCardAtCart(json, count));
       });
     }
@@ -380,7 +380,7 @@ function updateTotalPrice(goodsInCart) {
   $(".total-price").text("0");
 
   for (const [id, count] of goodsInCart.entries()) {
-    getFromApi(`https://nit.tron.net.ua/api/product/${id}`, (json) => {
+    getFromApi(`http://localhost:3000/api/product/${id}`, (json) => {
       let $totalPrice = $(".total-price");
       let sum = parseFloat($totalPrice.text());
 
