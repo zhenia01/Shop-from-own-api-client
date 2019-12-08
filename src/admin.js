@@ -7,33 +7,33 @@ import "jquery-modal/jquery.modal.min.css"
 
 $(async function () {
 
-  // $(".auth").modal({
-  //   clickClose: false,
-  //   showClose: false,
-  //   escapeClose: false,
-  // });
+  $(".auth").modal({
+    clickClose: false,
+    showClose: false,
+    escapeClose: false,
+  });
 
-  // $('.auth-submit').on("click", () => {
+  $('.auth-submit').on("click", () => {
 
-  //   const user = $(".auth-form-username").val();
-  //   const pass = $(".auth-form-password").val();
+    const user = $(".auth-form-username").val();
+    const pass = $(".auth-form-password").val();
 
-  //   $.ajax({
-  //     url: "http://localhost:3000/api/auth/signin",
-  //     type: "POST",
-  //     data: {
-  //       username: user,
-  //       password: pass
-  //     },
-  //     success: (json) => {
-  //       $.modal.close();
-  //     },
-  //     error: (request, status, error) => {
-  //       alert("Invalid username or password. Try again!");
-  //       $(".auth-form").trigger("reset");
-  //     }
-  //   });
-  // });
+    $.ajax({
+      url: "http://localhost:3000/api/auth/signin",
+      type: "POST",
+      data: {
+        username: user,
+        password: pass
+      },
+      success: (json) => {
+        $.modal.close();
+      },
+      error: (request, status, error) => {
+        alert("Invalid username or password. Try again!");
+        $(".auth-form").trigger("reset");
+      }
+    });
+  });
 
   $(".show-orders").on("click", () => {
 
@@ -52,13 +52,18 @@ $(async function () {
         }
 
         const $order = $("<div>", { "class": "order" });
-        const $name = $("<div>", { "class": "order-name" }).text(name);
-        const $phone = $("<div>", { "class": "order-phone" }).text(phone);
-        const $email = $("<div>", { "class": "order-email" }).text(email);
+        const $name = $("<div>", { "class": "order-name" }).text(`Name: ${name}`);
+        const $phone = $("<div>", { "class": "order-phone" }).text(`Phone: ${phone}`);
+        const $email = $("<div>", { "class": "order-email" }).text(`Email: ${email}`);
         const $products = $("<div>", { "class": "order-products" });
+        const $ordered = $("<div>", { "class": "order-ordered" }).text("Ordered products:");
+        $products.append($ordered);
         for (const [id, count] of products.entries()) {
           getFromApi(`http://localhost:3000/api/product/${id}`, (json) => {
-            
+            const $product = $("<div>", {"class" : "order-product"});
+            const productName = `${json.name}; ${count} pieces`;
+            $product.text(productName);
+            $products.append($product);
           });
         }
         $order.append($name, $phone, $email, $products);
